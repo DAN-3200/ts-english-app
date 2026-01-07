@@ -1,0 +1,21 @@
+@import url('https://fonts.googleapis.com/css2?family=Merriweather:ital,opsz,wght@0,18..144,300..900;1,18..144,300..900&display=swap');
+@import 'tailwindcss';
+
+@theme {
+	--font-Merriweather: 'Merriweather', serif;
+
+	--color-earth-dark: #1a2e1a;
+	--color-earth-medium: #2d4a2b;
+	--color-earth-soft: #6b7f69;
+	--color-earth-light: #b8a88f;
+	--color-earth-beige: #d9cdb8;
+
+	/* Hierarquia de Texto */
+	--color-text-primary: #1a2419;
+	--color-text-secondary: #4a5649;
+	--color-text-subtle: #6b7f69;
+}
+
+html {
+	@apply font-Merriweather;
+}
