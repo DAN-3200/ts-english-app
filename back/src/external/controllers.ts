@@ -4,9 +4,14 @@ import type { UseCaseLayer } from '../internal/usecase';
 export class ControllerLayer {
 	constructor(private usecase: UseCaseLayer) {}
 
-	getContent = async (req: Request, res: Response) => {
+	getContentById = async (req: Request, res: Response) => {
 		let paramId = req.params.id as string;
-		let response = await this.usecase.getContent(paramId);
+		let response = await this.usecase.getContentById(paramId);
+		res.status(200).json(response);
+	};
+
+	getContentRandom = async (_req: Request, res: Response) => {
+		let response = await this.usecase.getContentRandom();
 		res.status(200).json(response);
 	};
 }

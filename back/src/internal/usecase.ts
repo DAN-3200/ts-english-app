@@ -29,8 +29,8 @@ export class UseCaseLayer {
 		await this.repo.saveStory(info);
 	};
 
-	getContent = async (id: string): Promise<OutputStory> => {
-		const story = await this.repo.getStory(id);
+	getContentById = async (id: string): Promise<OutputStory> => {
+		const story = await this.repo.getStoryId(id);
 
 		if (!story) {
 			throw new Error('Story não encontrada');
@@ -40,6 +40,33 @@ export class UseCaseLayer {
 
 		const words = await this.repo.getWords(wordsInStory);
 
+		return {
+			id: story?._id!.toString(),
+			title: story.title,
+			story: story.story,
+			moral: story.moral,
+			words: words!.map((i) => ({
+				id: i?._id!.toString(),
+				term: i.term,
+				partOfSpeech: i.partOfSpeech,
+				definition: i.definition,
+				examples: i.examples,
+				synonyms: i.synonyms,
+				translation: i.translation,
+			})),
+		};
+	};
+
+	getContentRandom = async (): Promise<OutputStory> => {
+		const story = await this.repo.getStoryRandom();
+
+		if (!story) {
+			throw new Error('Story não encontrada');
+		}
+
+		const wordsInStory = extractUniqueWords(story.story);
+		const words = await this.repo.getWords(wordsInStory);
+		
 		return {
 			id: story?._id!.toString(),
 			title: story.title,

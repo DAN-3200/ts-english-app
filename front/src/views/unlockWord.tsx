@@ -4,7 +4,7 @@ import { DictionaryView } from './dictionary';
 
 export const UnlockWordApp = () => {
 	const {
-		currentParagraph,
+		currentStory,
 		targetText,
 		userInput,
 		selectedWord,
@@ -17,7 +17,7 @@ export const UnlockWordApp = () => {
 	} = useUnlockWord();
 
 	return (
-		<div className='max-w-5xl w-full'>
+		<div className='max-w-7xl w-full'>
 			<div className='grid grid-cols-1 lg:grid-cols-3 gap-6'>
 				{/* Main Text Area */}
 				<div className='lg:col-span-2'>
@@ -26,7 +26,7 @@ export const UnlockWordApp = () => {
 						<div className='bg-stone-100 px-6 md:px-8 py-4 border-b border-stone-200'>
 							<div className='flex items-center justify-between mb-3'>
 								<div className='text-gray-900 font-bold text-lg'>
-									{currentParagraph.title}
+									{currentStory.title}
 								</div>
 								<span className='text-green-800 font-bold text-lg'>
 									{Math.round(progress)}%
@@ -54,7 +54,7 @@ export const UnlockWordApp = () => {
 							</div>
 
 							<TextDisplay
-								paragraph={currentParagraph}
+								story={currentStory}
 								targetText={targetText}
 								userInput={userInput}
 								isComplete={isComplete}
@@ -63,6 +63,10 @@ export const UnlockWordApp = () => {
 
 							{isComplete && (
 								<div className='mt-12 pt-8 border-t border-stone-200'>
+									<p className='text-stone-600 text-sm mb-6 italic text-center'>
+										<span className='font-semibold text-stone-700'>Moral:</span>{' '}
+										{currentStory.moral}
+									</p>
 									<div className='flex flex-col items-center gap-4'>
 										<div className='text-green-800 text-xl font-bold'>
 											✓ Texto completo!

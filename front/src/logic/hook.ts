@@ -7,7 +7,7 @@ import { playCompletionSound } from '../infra/utils/soundNotification';
 
 export function useUnlockWord(initialParagraphIndex: number = 0) {
 	const [currentParagraphIndex, setCurrentParagraphIndex] = useState(
-		initialParagraphIndex
+		initialParagraphIndex,
 	);
 	const [userInput, setUserInput] = useState('');
 	const [selectedWord, setSelectedWord] = useState<Word | null>(null);
@@ -16,8 +16,8 @@ export function useUnlockWord(initialParagraphIndex: number = 0) {
 
 	const [paragraphs, setParagraphs] = useAtom(ctxMain.ParagraphQuery);
 
-	const currentParagraph = paragraphs[currentParagraphIndex];
-	const targetText = currentParagraph.content;
+	const currentStory = paragraphs[currentParagraphIndex];
+	const targetText = currentStory.story;
 
 	useEffect(() => {
 		containerRef.current?.focus();
@@ -57,14 +57,23 @@ export function useUnlockWord(initialParagraphIndex: number = 0) {
 		setUserInput('');
 		setSelectedWord(null);
 		setIsComplete(false);
-		// * gerar mais outro conteúdo
-		setParagraphs(await getTextContent());
+		const response = await getTextContent();
+		setParagraphs((prev) => [
+			...prev,
+			{
+				_id: response.id,
+				title: response.title,
+				story: response.story,
+				moral: response.moral,
+				words: response.words,
+			},
+		]);
 	};
 
 	const progress = (userInput.length / targetText.length) * 100;
 
 	return {
-		currentParagraph,
+		currentStory,
 		targetText,
 		userInput,
 		selectedWord,

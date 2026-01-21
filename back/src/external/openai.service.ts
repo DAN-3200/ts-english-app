@@ -1,10 +1,12 @@
-import { GoogleGenAI } from '@google/genai';
-import type { Word } from '../internal/entity';
+import OpenAI from 'openai';
 import type { IServices } from '../internal/ports';
+import type { Word } from '../internal/entity';
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
+const client = new OpenAI({
+	apiKey: process.env.OPENAI_API_KEY!
+});
 
-export class ServiceLayer implements IServices {
+export class ServiceLayerOpenAI implements IServices {
 	fetchWordsFromAI = async (info: string[]): Promise<Word[]> => {
 		const prompt = `
       Generate a JSON array for the words below using the exact schema.
@@ -44,16 +46,18 @@ export class ServiceLayer implements IServices {
       - translation: accurate Portuguese translation in this context.
     `;
 
-		const response = await ai.models.generateContent({
-			model: 'gemini-2.5-flash-lite',
-			contents: prompt,
+		const response = await client.responses.create({
+			model: 'gpt-5-nano',
+			input: prompt,
 		});
 
 		if (!response.text) {
 			throw new Error('Empty AI response');
 		}
 
-		const cleanJSON = response.text!.replace(/```/g, '').replace(/json/g, '');
+		const cleanJSON = response.output_text
+			.replace(/```/g, '')
+			.replace(/json/g, '');
 		const finalJson = JSON.parse(cleanJSON);
 
 		if (!Array.isArray(finalJson)) {

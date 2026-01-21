@@ -14,7 +14,7 @@ export class RepositoryLayer implements IRepo {
 	async saveStory(info: Story): Promise<void> {
 		await this.story?.insertOne(info);
 	}
-	async getStory(input: string): Promise<Story | null> {
+	async getStoryId(input: string): Promise<Story | null> {
 		return await this.story!.findOne({ _id: new ObjectId(input) });
 	}
 
@@ -49,6 +49,18 @@ export class RepositoryLayer implements IRepo {
 	async getWords(info: string[]): Promise<Word[] | null> {
 		const words = await this.word!.find({ term: { $in: info } }).toArray();
 		return words;
+	}
+
+	async getStoryRandom(): Promise<Story | null> {
+		const exists = await this.story!.countDocuments();
+		const random = Math.floor(Math.random() * exists);
+
+		const storyRandom = await this.story!.find()
+			.skip(random)
+			.limit(1)
+			.toArray();
+
+		return storyRandom[0] ?? null;
 	}
 
 	async findMissingWords(info: string[]): Promise<string[]> {

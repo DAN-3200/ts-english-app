@@ -9,7 +9,7 @@ export type PartOfSpeech =
 	| 'interjection';
 
 export interface Word {
-	id?: string;
+	_id?: string;
 	term: string;
 	partOfSpeech: PartOfSpeech;
 	definition: string;
@@ -18,9 +18,10 @@ export interface Word {
 	translation: string;
 }
 
-export interface Paragraph {
-	id?: string;
+export interface Story {
+	_id?: string;
 	title: string;
-	content: string;
-	wordsQuery: Word[];
+	story: string;
+	moral: string;
+	words: Word[];
 }

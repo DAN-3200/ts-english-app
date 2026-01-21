@@ -1,4 +1,4 @@
-	{
+{
 	"name": "ts-english-service",
 	"module": "index.ts",
 	"type": "module",
@@ -20,6 +20,7 @@
 		"cors": "^2.8.5",
 		"express": "^5.2.1",
 		"mongodb": "^7.0.0",
-		"morgan": "^1.10.1"
+		"morgan": "^1.10.1",
+		"openai": "^6.16.0"
 	}
 }

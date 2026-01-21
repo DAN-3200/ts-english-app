@@ -1,14 +1,14 @@
 import type { JSX } from 'react';
-import type { Paragraph, Word } from '../logic/entity';
+import type { Story, Word } from '../logic/entity';
 
 export const TextDisplay = ({
-	paragraph,
+	story,
 	targetText,
 	userInput,
 	isComplete,
 	onWordClick,
 }: {
-	paragraph: Paragraph;
+	story: Story;
 	targetText: string;
 	userInput: string;
 	isComplete: boolean;
@@ -29,7 +29,10 @@ export const TextDisplay = ({
 
 	const getWordData = (word: string): Word | null => {
 		const cleanWord = word.toLowerCase().replace(/[.,!?]/g, '');
-		return paragraph.wordsQuery.find((w) => w.term.toLowerCase() === cleanWord) || null;
+		return (
+			story.words.find((w) => w.term.toLowerCase() === cleanWord) ||
+			null
+		);
 	};
 
 	let charIndex = 0;
@@ -79,7 +82,7 @@ export const TextDisplay = ({
         `}
 				onClick={() => wordComplete && wordData && onWordClick(wordData)}>
 				{wordChars}
-			</span>
+			</span>,
 		);
 
 		charIndex += word.length;
@@ -106,7 +109,7 @@ export const TextDisplay = ({
 					{isSpaceCursor && (
 						<span className='absolute left-1/2 -translate-x-1/2 top-0 bottom-0 w-0.5 bg-green-800 animate-pulse' />
 					)}
-				</span>
+				</span>,
 			);
 
 			charIndex += 1;
