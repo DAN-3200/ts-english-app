@@ -1,67 +1,63 @@
-import type { Collection, MongoClient } from 'mongodb';
+import { ObjectId, type Collection, type Db, type MongoClient } from 'mongodb';
 import type { Story, Word } from '../internal/entity';
-import type { IPorts } from '../internal/ports';
+import type { IRepo } from '../internal/ports';
 
-export class RepositoryLayer implements IPorts {
+export class RepositoryLayer implements IRepo {
 	private word: Collection<Word> | undefined;
-	private paragraph: Collection<Story> | undefined;
+	private story: Collection<Story> | undefined;
 
-	constructor(private conn: MongoClient) {
-		this.init(this.conn);
+	constructor(db: Db) {
+		this.story = db.collection<Story>('story');
+		this.word = db.collection<Word>('word');
 	}
 
-	init = async (conn: MongoClient) => {
-		const db = conn.db('dbmain'); // nome do banco
+	async saveStory(info: Story): Promise<void> {
+		await this.story?.insertOne(info);
+	}
+	async getStory(input: string): Promise<Story | null> {
+		return await this.story!.findOne({ _id: new ObjectId(input) });
+	}
 
-		const collectionsToCreate: string[] = ['word', 'paragraph']; // lista dos nomes das collections a serem criadas
-
-		const existing = await db.listCollections().toArray();
-		const existingNames = new Set(existing.map((i) => i.name));
-
-		for (const name of collectionsToCreate) {
-			if (!existingNames.has(name)) {
-				await db.createCollection(name);
-			}
+	async checkStoryExisting(info: Story): Promise<boolean> {
+		if (!this.story) {
+			throw new Error('Story collection not initialized');
 		}
 
-		this.word = db.collection<Word>('word');
-		this.paragraph = db.collection<Story>('paragraph');
-	};
+		const exists = await this.story.countDocuments(
+			{ title: info.title },
+			{ limit: 1 },
+		);
 
-	async getDataText() {
-		const result = await this.paragraph
-			?.aggregate([{ $sample: { size: 1 } }])
-			.toArray();
-
-		const texto = result?.[0]?.text;
-		if (!texto) return null;
-
-		const palavras = extrairPalavras(texto);
-
-		const dadosDasPalavras = await this.word
-			?.find({ palavra: { $in: palavras } })
-			.toArray();
-
-		return { texto, palavras, dadosDasPalavras };
+		return exists > 0 ? true : false;
 	}
 
-	async addWord(newWord: Word) {
-		await this.word?.insertOne(newWord);
+	async saveWords(info: Word[]): Promise<void> {
+		if (!this.word) {
+			throw new Error('Word collection not initialized');
+		}
+		const sanitized = info.map((word) => ({
+			...word,
+			synonyms: word.synonyms ?? [],
+		}));
+
+		try {
+			await this.word.insertMany(sanitized);
+		} catch (e) {
+			console.error(e);
+		}
+	}
+	async getWords(info: string[]): Promise<Word[] | null> {
+		const words = await this.word!.find({ term: { $in: info } }).toArray();
+		return words;
 	}
 
-	async addParagraph(newParagraph: Story) {
-		await this.paragraph?.insertOne(newParagraph);
-	}
-}
+	async findMissingWords(info: string[]): Promise<string[]> {
+		const existing = await this.word!.find(
+			{ term: { $in: info } },
+			{ projection: { term: 1 } },
+		).toArray();
 
-function extrairPalavras(texto: string): string[] {
-	return [
-		...new Set(
-			texto
-				.toLowerCase()
-				.replace(/[.,!?;:()"]/g, '')
-				.split(/\s+/)
-				.filter(Boolean)
-		),
-	];
+		const existingUnique = new Set(existing.map((doc) => doc.term));
+		return info.filter((term) => !existingUnique.has(term));
+	}
 }

@@ -1,75 +1,65 @@
 import { GoogleGenAI } from '@google/genai';
-import type { Story } from '../internal/entity';
+import type { Word } from '../internal/entity';
+import type { IServices } from '../internal/ports';
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
 
-export async function RequestNewContent() {
-  const response = await ai.models.generateContent({
-    model: 'gemini-2.5-flash-lite',
-    contents: PromptGeracional,
-  });
+export class ServiceLayer implements IServices {
+	fetchWordsFromAI = async (info: string[]): Promise<Word[]> => {
+		const prompt = `
+      Generate a JSON array for the words below using the exact schema.
 
-  const cleanJSON = response.text!.replace(/```/g, '').replace(/json/g, '');
+      Input:
+      ${info}
 
-  const finalJson = [JSON.parse(cleanJSON)];
+      Rules:
+      - Output valid JSON only (single array). No extra text.
+      - Exclude proper nouns. When unsure, exclude.
 
-  console.log(finalJson);
-  return finalJson as Story[];
+      Schema:
+      {
+        "id"?: string,
+        "term": string,
+        "partOfSpeech":
+          | "noun"
+          | "verb"
+          | "adjective"
+          | "adverb"
+          | "pronoun"
+          | "preposition"
+          | "conjunction"
+          | "interjection",
+        "definition": string,
+        "examples": string[],
+        "synonyms"?: string[],
+        "translation": string
+      }
+
+      Constraints:
+      - term: exact input word, lowercase.
+      - partOfSpeech: role used in context.
+      - definition: <= 20 words, learner-friendly English.
+      - examples: exactly 2 present-tense sentences, each 8–15 words.
+      - synonyms: optional, 2–4 single words only.
+      - translation: accurate Portuguese translation in this context.
+    `;
+
+		const response = await ai.models.generateContent({
+			model: 'gemini-2.5-flash-lite',
+			contents: prompt,
+		});
+
+		if (!response.text) {
+			throw new Error('Empty AI response');
+		}
+
+		const cleanJSON = response.text!.replace(/```/g, '').replace(/json/g, '');
+		const finalJson = JSON.parse(cleanJSON);
+
+		if (!Array.isArray(finalJson)) {
+			throw new Error('AI response is not an array');
+		}
+
+		return finalJson as Word[];
+	};
 }
-
-const PromptGeracional = `
-You are a precise English linguistic analyzer and content generator.
-
-Produce one valid JSON object only, strictly following this TypeScript shape:
-
-{
-  "id"?: string,
-  "title": string,
-  "content": string,
-  "wordsQuery": {
-    "id"?: string,
-    "term": string,
-    "partOfSpeech":
-      | "noun"
-      | "verb"
-      | "adjective"
-      | "adverb"
-      | "pronoun"
-      | "preposition"
-      | "conjunction"
-      | "interjection",
-    "definition": string,
-    "examples": string[],
-    "synonyms"?: string[],
-    "translation": string
-  }[]
-}
-
-Content rules:
-- The "content" field must be 60 words or fewer.
-- Use clear, simple English in present tense.
-- Avoid lists, quotes, or special formatting.
-- The content must be grammatically correct and natural.
-
-wordsQuery rules:
-- Generate one wordsQuery entry for every unique word in content.
-- Words are lowercased, punctuation removed, no duplicates.
-- Include all word types, including articles, pronouns, prepositions, and conjunctions.
-- Order wordsQuery by first appearance in content.
-
-Per-word constraints:
-- term: exact word from content, lowercase.
-- partOfSpeech: choose the role used in the given content and must match the allowed literals.
-- definition: no more than 20 words, learner-friendly English.
-- examples: exactly 2 sentences, each 8–15 words, present tense, natural usage.
-- synonyms: optional, include only when appropriate, 2–4 short words.
-- translation: accurate Portuguese translation of the word in this context.
-
-Output constraints:
-- Output valid JSON only.
-- No markdown.
-- No explanations.
-- No comments.
-- No extra fields.
-- Ensure correct data types.
-`;

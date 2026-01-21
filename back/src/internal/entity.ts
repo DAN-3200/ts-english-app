@@ -1,3 +1,5 @@
+import type { ObjectId } from 'mongodb';
+
 export type PartOfSpeech =
 	| 'noun'
 	| 'verb'
@@ -9,7 +11,7 @@ export type PartOfSpeech =
 	| 'interjection';
 
 export interface Word {
-	id?: string;
+	_id?: ObjectId | string;
 	term: string;
 	partOfSpeech: PartOfSpeech;
 	definition: string;
@@ -18,17 +20,9 @@ export interface Word {
 	translation: string;
 }
 
-export interface StoryWord {
-	wordId: string;
-	isTarget: boolean; // palavra foco da história
-}
-
-export type Level = 'A1' | 'A2' | 'B1';
-
 export interface Story {
-	id?: string;
-	level: Level;
+	_id?: ObjectId | string;
 	title: string;
-	paragraphs: string[]; // suporta paragrafos separadamente
-	words: StoryWord[]; // contém consulta de todas as palavras do texto
+	story: string;
+	moral: string;
 }
