@@ -342,7 +342,7 @@ const ProgressHeader = ({
       <div className="w-full bg-stone-300 rounded-full h-2 overflow-hidden">
         <div
           className={`h-full transition-all duration-300 ease-out ${isTyping
-            ? "bg-[linear-gradient(90deg,#15803d,#22c55e,#06b6d4,#3b82f6,#a855f7,#ec4899,#f59e0b,#22c55e,#15803d)] bg-[length:300%_100%] animate-[rainbow-shimmer_1.6s_linear_infinite] shadow-[0_0_12px_rgba(34,197,94,0.7)]"
+            ? "bg-[linear-gradient(90deg,#15803d,#22c55e,#06b6d4,#3b82f6,#a855f7,#ec4899,#f59e0b,#22c55e,#15803d)] bg-size-[300%_100%] animate-[rainbow-shimmer_1.6s_linear_infinite] shadow-[0_0_12px_rgba(34,197,94,0.7)]"
             : "bg-green-700"
             }`}
           style={{ width: `${progress}%` }}
@@ -842,7 +842,7 @@ const SpacedReviewModal = ({
           </div>
         </div>
 
-        <div className="px-6 py-10 min-h-[320px] flex flex-col items-center justify-center text-center">
+        <div className="px-6 py-10 min-h-80 flex flex-col items-center justify-center text-center">
           {empty && (
             <EmptyState
               title="Nada para revisar agora"
